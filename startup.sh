@@ -27,9 +27,9 @@ then
     exit 1
 fi
 
-if ! command -v docker-compose &> /dev/null
+if ! command -v docker compose &> /dev/null
 then
-    echo -e "${RED}Error: docker-compose could not be found.${NC}"
+    echo -e "${RED}Error: docker compose could not be found.${NC}"
     echo -e "${YELLOW}Please ensure Docker Compose is installed and available in your PATH.${NC}"
     exit 1
 fi
@@ -44,14 +44,6 @@ echo ""
 echo -e "${BLUE}Step 2: Building the Java backend with Maven...${NC}"
 echo -e "${YELLOW}(This may take a few minutes on the first run as Maven downloads dependencies)${NC}"
 
-# We use ./mvnw to ensure we're using the project's specified Maven version
-if [ -f "./mvnw" ]; then
-    ./mvnw clean package -DskipTests
-else
-    # Fallback to system maven if wrapper is not present
-    mvn clean package -DskipTests
-fi
-
 
 # Check if the Maven build was successful
 if [ $? -ne 0 ]; then
@@ -62,7 +54,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-echo -e "${GREEN}✔ Backend application built successfully! The .jar file is ready.${NC}"
+echo -e "${GREEN} Backend application built successfully! The .jar file is ready.${NC}"
 echo ""
 
 
@@ -70,13 +62,13 @@ echo ""
 echo -e "${BLUE}Step 3: Building Docker images and starting containers...${NC}"
 echo -e "${YELLOW}(This can also take a few minutes, especially the first time)${NC}"
 
-docker-compose up -d --build
+docker compose up -d --build
 
 # Check if docker-compose was successful
 if [ $? -ne 0 ]; then
     echo -e "${RED}----------------------------------------${NC}"
     echo -e "${RED}Docker Compose failed to start! Please check the errors above.${NC}"
-    echo -e "${YELLOW}You can try running 'docker-compose up --build' manually for more detailed logs.${NC}"
+    echo -e "${YELLOW}You can try running 'docker compose up --build' manually for more detailed logs.${NC}"
     echo -e "${RED}----------------------------------------${NC}"
     exit 1
 fi
