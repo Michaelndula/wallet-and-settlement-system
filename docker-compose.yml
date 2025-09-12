@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-
   mysql:
     image: mysql:8.0
     container_name: wallet-mysql
@@ -14,6 +13,10 @@ services:
       MYSQL_ROOT_PASSWORD: rootpassword
     volumes:
       - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
     networks:
       - wallet
 
@@ -33,11 +36,15 @@ services:
     build: .
     container_name: wallet-backend
     depends_on:
-      - mysql
-      - rabbitmq
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
     ports:
       - "8080:8080"
     environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/wallet?useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_RABBITMQ_HOST=rabbitmq
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
     networks:
       - wallet
@@ -60,4 +67,3 @@ volumes:
 networks:
   wallet:
     driver: bridge
-

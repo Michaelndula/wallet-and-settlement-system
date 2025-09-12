@@ -1,5 +1,6 @@
 package com.wallet.wallet.service;
 
+import com.wallet.wallet.config.RabbitMQConfig;
 import com.wallet.wallet.dto.ConsumeRequest;
 import com.wallet.wallet.dto.TopupRequest;
 import com.wallet.wallet.exception.InsufficientBalanceException;
@@ -17,7 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.Optional;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
