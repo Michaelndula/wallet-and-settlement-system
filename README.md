@@ -79,7 +79,7 @@ This project is designed for a simple, one-command startup.
 #### Setup Option 2: Manually Build and run the application:
 From the root directory of the project, run the following command:
 
-```docker-compose up --build```
+```docker compose up --build```
 
 ***This command will:***
 
@@ -101,7 +101,7 @@ Once the containers are running, you can access the different parts of the syste
 ### Stopping the Application:
 To stop all running containers, press Ctrl + C in the terminal, and then run:
 
-```docker-compose down -v```
+```docker compose down -v```
 
 ## API Endpoints
 
