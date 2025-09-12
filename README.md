@@ -22,11 +22,11 @@ This project follows a modern microservice architecture, emphasizing a clean sep
 
 - **Backend:** A stateless RESTful API built with Java 17 and Spring Boot 3. It follows a clean architecture pattern (Controller -> Service -> Repository).
 
-- **Controllers:** Expose REST endpoints.
+   - **Controllers:** Expose REST endpoints.
 
-- **Services:** Contain the core business logic.
+  - **Services:** Contain the core business logic.
 
-- **Repositories:** Handle data persistence using Spring Data JPA.
+  - **Repositories:** Handle data persistence using Spring Data JPA.
 
 - **Frontend:** A responsive single-page application (SPA) built with React. It communicates with the backend via REST API calls and is served by a lightweight Nginx web server.
 
@@ -48,17 +48,40 @@ No local installation of Java, Maven, Node.js, or MySQL is required.
 ### Setup & Running the Application
 This project is designed for a simple, one-command startup.
 
-Clone the repository:
+1. **Clone the repository:**
 
-- git clone https://github.com/Michaelndula/wallet-and-settlement-system.git
+- git clone [https://github.com/Michaelndula/wallet-and-settlement-system.git](https://github.com/Michaelndula/wallet-and-settlement-system.git)
 - cd wallet-system
 
-### Build and run the application:
+#### Setup Option 1
+2. **Make the startup script executable (one-time command):**
+     
+    This gives your system permission to run the script.
+
+   ```chmod +x startup.sh```
+
+3. ***Run the startup script:***
+   
+   From the root directory of the project, execute the script:
+
+   ```./startup.sh```
+
+***This single command will automate the entire setup:***
+
+- Check for Docker and Docker Compose on your system.
+
+- Build the Java backend application using the Maven wrapper.
+
+- Build the Docker images for all services.
+
+- Start the entire application stack in the correct order.
+
+#### Setup Option 2: Manually Build and run the application:
 From the root directory of the project, run the following command:
 
 ```docker-compose up --build```
 
-#### This command will:
+***This command will:***
 
 1. Build the Java backend Docker image (compiling the code and packaging it).
 
@@ -116,6 +139,4 @@ GET | ```/api/v1/reconciliation/report/csv``` | Generates and downloads a full r
 
 - **Unit & Integration Tests:** Expand the test suite to cover more edge cases and business logic scenarios.
 
-- **CI/CD Pipeline:** Set up a continuous integration and deployment pipeline to automate testing and deployments.
-
-- **Flexible Report Handling:** Allow the reconciliation module to process different file formats (e.g., JSON) or fetch reports from an external API or S3 bucket.
+- **CI/CD Pipeline:** Set up a continuous integration and deployment pipeline to automate testing.
