@@ -5,12 +5,17 @@ import com.wallet.wallet.dto.ReconciliationReport;
 import com.wallet.wallet.dto.TransactionDTO;
 import com.wallet.wallet.model.Transaction;
 import com.wallet.wallet.repository.TransactionRepository;
+import com.opencsv.CSVReader;
+import com.opencsv.CSVWriter;
+import com.opencsv.exceptions.CsvValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -19,9 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import com.opencsv.CSVReader;
-import com.opencsv.exceptions.CsvValidationException;
-import java.io.IOException;
 
 @Service
 @RequiredArgsConstructor
@@ -92,11 +94,65 @@ public class ReconciliationService {
                 .build();
     }
 
+    /**
+     * Generates a reconciliation report and writes it directly to a CSV stream.
+     * @param date The date for the report.
+     * @param writer The PrintWriter to write the CSV content to.
+     * @throws IOException if an I/O error occurs
+     */
+    public void writeReconciliationReportToCsv(LocalDate date, PrintWriter writer) throws IOException {
+        ReconciliationReport report = generateReport(date);
+
+        try (CSVWriter csvWriter = new CSVWriter(writer)) {
+            // --- Summary Section ---
+            csvWriter.writeNext(new String[]{"Reconciliation Summary Report"});
+            csvWriter.writeNext(new String[]{"Report Date:", report.getReportDate()});
+            csvWriter.writeNext(new String[]{});
+            csvWriter.writeNext(new String[]{"Total Internal Transactions:", String.valueOf(report.getTotalInternalTransactions())});
+            csvWriter.writeNext(new String[]{"Total External Transactions:", String.valueOf(report.getTotalExternalTransactions())});
+            csvWriter.writeNext(new String[]{"Matched:", String.valueOf(report.getMatchedCount())});
+            csvWriter.writeNext(new String[]{"Mismatched:", String.valueOf(report.getMismatchedCount())});
+            csvWriter.writeNext(new String[]{"Missing in External:", String.valueOf(report.getMissingInExternalCount())});
+            csvWriter.writeNext(new String[]{"Missing in Internal:", String.valueOf(report.getMissingInInternalCount())});
+            csvWriter.writeNext(new String[]{});
+
+            // --- Matched Transactions ---
+            csvWriter.writeNext(new String[]{"Matched Transactions"});
+            csvWriter.writeNext(new String[]{"Transaction ID", "Amount", "Type", "Timestamp"});
+            for (TransactionDTO tx : report.getMatched()) {
+                csvWriter.writeNext(new String[]{tx.getTransactionId(), tx.getAmount().toString(), tx.getType().toString(), tx.getCreatedAt().toString()});
+            }
+            csvWriter.writeNext(new String[]{});
+
+            // --- Mismatched Transactions ---
+            csvWriter.writeNext(new String[]{"Mismatched Transactions"});
+            csvWriter.writeNext(new String[]{"Transaction ID", "Internal Amount", "External Amount"});
+            report.getMismatched().forEach((id, detail) -> csvWriter.writeNext(new String[]{id, detail.getInternalAmount().toString(), detail.getExternalAmount().toString()}));
+            csvWriter.writeNext(new String[]{});
+
+            // --- Missing in External Report (Internal Only) ---
+            csvWriter.writeNext(new String[]{"Missing in External Report (Internal Only)"});
+            csvWriter.writeNext(new String[]{"Transaction ID", "Amount", "Type", "Timestamp"});
+            for (TransactionDTO tx : report.getMissingInExternal()) {
+                csvWriter.writeNext(new String[]{tx.getTransactionId(), tx.getAmount().toString(), tx.getType().toString(), tx.getCreatedAt().toString()});
+            }
+            csvWriter.writeNext(new String[]{});
+
+            // --- Missing in Internal Report (External Only) ---
+            csvWriter.writeNext(new String[]{"Missing in Internal Report (External Only)"});
+            csvWriter.writeNext(new String[]{"Transaction ID", "Amount"});
+            for (ExternalTransaction tx : report.getMissingInInternal()) {
+                csvWriter.writeNext(new String[]{tx.getTransactionId(), tx.getAmount().toString()});
+            }
+        }
+    }
+
+
     private List<ExternalTransaction> readExternalTransactions(LocalDate date) {
         List<ExternalTransaction> transactions = new ArrayList<>();
         String fileName = "external_transactions_" + date + ".csv";
         try (InputStream is = getClass().getClassLoader().getResourceAsStream(fileName);
-             CSVReader reader = new CSVReader(new InputStreamReader(is))) {
+             com.opencsv.CSVReader reader = new com.opencsv.CSVReader(new InputStreamReader(is))) {
             reader.readNext();
             String[] line;
             while ((line = reader.readNext()) != null) {
@@ -123,3 +179,4 @@ public class ReconciliationService {
                 .build();
     }
 }
+
