@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+
+  mysql:
+    image: mysql:8.0
+    container_name: wallet-mysql
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_DATABASE: wallet
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: rootpassword
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - wallet
+
+  rabbitmq:
+    image: rabbitmq:3.9-management
+    container_name: wallet-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - wallet
+
+  backend:
+    build: .
+    container_name: wallet-backend
+    depends_on:
+      - mysql
+      - rabbitmq
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    networks:
+      - wallet
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: wallet-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - wallet
+
+volumes:
+  mysql_data:
+
+networks:
+  wallet:
+    driver: bridge
+
