@@ -17,7 +17,7 @@ import java.math.BigDecimal;
 @RequiredArgsConstructor
 public class WalletController {
 
-    private final WalletService walletService;
+    private final   WalletService walletService;
 
     @PostMapping("/{walletId}/topup")
     public ResponseEntity<String> topupWallet(@PathVariable Long walletId, @Valid @RequestBody TopupRequest request) {
